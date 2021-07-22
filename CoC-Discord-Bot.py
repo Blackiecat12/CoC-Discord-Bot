@@ -2,20 +2,16 @@
 # Mainly created to improve API/Discord Bot knowledge. Improving python alongside.
 
 # imports for coc scripts
-import asyncio
 import coc
 import os
-from numpy import recarray
 
 # imports for discord bot
-import discord
 from discord.ext import commands
 
 # imports for data handling and gathering
 import pandas as pd
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from pandas.core import indexing
 
 # Login to CoC and init bot
 load_dotenv()
@@ -53,12 +49,10 @@ async def updateData():
         if tag not in data.columns:
             data[tag] = [None] * 26
             print(f'Added {tag}')
-    # re-save data
-    saveData()
     # prep clan and player updates
     client.add_clan_updates(clanTag)
-    memList = await client.get_members(clanTag)
-    for m in memList:
+    mem_list = await client.get_members(clanTag)
+    for m in mem_list:
         client.add_player_updates(m.tag)
     # signal done
     print("Loaded PlayerTag updates")
@@ -74,7 +68,7 @@ def ping(name):
     if data.isnull().at[time.hour, name]:
         data.at[time.hour, name] = 0
     data.at[time.hour, name] += 1
-    saveData()
+    await saveData()
 
 
 # When given name checks if update happened in last 15 min (true) or not (false)
@@ -101,9 +95,9 @@ async def saveData():
 
 
 # Backs data up
-async def backupData():
+def backupData():
     data.to_excel(os.path.dirname(os.path.realpath(__file__)) + "\PlayerDataBackup.xlsx", sheet_name='yep')
-    await bot.get_channel(channel_id).send("Backed up")
+    print("Backed up")
 
 
 # This event handler detects when a player donates and pings tag
@@ -154,7 +148,7 @@ async def print_data(ctx, tag):
 
 @bot.command(name='save', help='Saves current data')
 async def savecmd():
-    saveData()
+    await saveData()
 
 
 @bot.command(name='pinfo', help='Returns player info from tag')
